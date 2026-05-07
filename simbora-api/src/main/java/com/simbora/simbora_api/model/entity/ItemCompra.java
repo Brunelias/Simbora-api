@@ -19,9 +19,9 @@ public class ItemCompra {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int quantidade;
-    private double precoUnitario;
-    private double valorTotal;
+    private Integer quantidade;
+    private Double precoUnitario;
+    private Double valorTotal;
 
     @ManyToOne
     @JoinColumn(name = "compra_id", nullable = false)

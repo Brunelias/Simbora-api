@@ -25,7 +25,7 @@ public class Evento {
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
     private String local;
-    private int capacidadeMaxima;
+    private Integer capacidadeMaxima;
     private String status;
 
     @ManyToOne

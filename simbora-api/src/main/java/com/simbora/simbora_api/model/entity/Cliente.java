@@ -15,8 +15,6 @@ import java.util.List;
 
 public class Cliente extends Pessoa{
 
-    private String telefone;
-
     @JsonIgnore
     @OneToMany(mappedBy = "cliente")
     private List<Ingresso> ingressos;

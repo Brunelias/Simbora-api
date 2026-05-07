@@ -13,6 +13,5 @@ import javax.persistence.*;
 
 public class Admin extends Pessoa {
 
-    private int nivelPermissao;
 
 }

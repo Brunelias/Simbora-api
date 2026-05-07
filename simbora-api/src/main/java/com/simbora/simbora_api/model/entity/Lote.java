@@ -24,8 +24,8 @@ public class Lote {
     private String nome;
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
-    private int quantidade;
-    private double precoUnitario;
+    private Integer quantidade;
+    private Double precoUnitario;
 
     @ManyToOne
     @JoinColumn(name = "evento_id")
