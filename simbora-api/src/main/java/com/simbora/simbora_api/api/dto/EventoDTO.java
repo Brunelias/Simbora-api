@@ -1,4 +1,4 @@
-package com.simbora.simbora_api.api.DTO;
+package com.simbora.simbora_api.api.dto;
 
 import com.simbora.simbora_api.model.entity.Evento;
 import lombok.AllArgsConstructor;

@@ -51,8 +51,8 @@ public class CompraService {
 
             item.setCompra(compra);
 
-            item.setValorUnitario(item.getLote().getPrecoUnitario());
-            item.setValorTotal(item.getQuantidade() * item.getValorUnitario());
+            item.setPrecoUnitario(item.getLote().getPrecoUnitario());
+            item.setValorTotal(item.getQuantidade() * item.getPrecoUnitario());
 
             item.getLote().setQuantidade(
                     item.getLote().getQuantidade() - item.getQuantidade()

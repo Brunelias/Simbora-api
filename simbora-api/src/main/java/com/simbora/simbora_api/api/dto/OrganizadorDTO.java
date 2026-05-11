@@ -1,6 +1,6 @@
-package com.simbora.simbora_api.api.DTO;
+package com.simbora.simbora_api.api.dto;
 
-import com.simbora.simbora_api.model.entity.Admin;
+import com.simbora.simbora_api.model.entity.Organizador;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,15 +10,16 @@ import org.modelmapper.ModelMapper;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class AdminDTO {
+public class OrganizadorDTO {
 
     private Long id;
     private String nome;
     private String email;
     private String celular;
+    private String documento;
 
-    public static AdminDTO create(Admin admin) {
+    public static OrganizadorDTO create(Organizador organizador) {
         ModelMapper modelMapper = new ModelMapper();
-        return modelMapper.map(admin, AdminDTO.class);
+        return modelMapper.map(organizador, OrganizadorDTO.class);
     }
 }
