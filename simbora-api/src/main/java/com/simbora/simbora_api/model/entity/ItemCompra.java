@@ -20,7 +20,7 @@ public class ItemCompra {
     private Long id;
 
     private Integer quantidade;
-    private Double precoUnitario;
+    private Double valorUnitario;
     private Double valorTotal;
 
     @ManyToOne

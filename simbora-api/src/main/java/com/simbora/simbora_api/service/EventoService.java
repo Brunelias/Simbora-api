@@ -41,7 +41,7 @@ public class EventoService {
 
     public void validar(Evento evento) {
 
-        if (evento.getTitulo() == null || evento.getTitulo().trim().equals("")) {
+        if (evento.getNome() == null || evento.getNome().trim().equals("")) {
             throw new RegraNegocioException("Título inválido");
         }
 
