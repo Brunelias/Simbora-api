@@ -27,12 +27,16 @@ public class CompraDTO {
     private List<ItemCompraDTO> itens;
 
     public static CompraDTO create(Compra compra) {
+
         ModelMapper modelMapper = new ModelMapper();
 
         CompraDTO dto = modelMapper.map(compra, CompraDTO.class);
 
         dto.idCliente = compra.getCliente().getId();
-        dto.idFormaPagamento = compra.getFormaPagamento().getId();
+
+        if (compra.getFormaPagamento() != null) {
+            dto.idFormaPagamento = compra.getFormaPagamento().getId();
+        }
 
         if (compra.getItens() != null) {
             dto.itens = compra.getItens()

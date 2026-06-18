@@ -86,15 +86,19 @@ public class CompraController {
             throw new RegraNegocioException("Cliente não encontrado");
         }
 
-        Optional<FormaPagamento> formaPagamento =
-                formaPagamentoService.getFormaPagamentoById(dto.getIdFormaPagamento());
-
-        if (!formaPagamento.isPresent()) {
-            throw new RegraNegocioException("Forma de pagamento não encontrada");
-        }
-
         compra.setCliente(cliente.get());
-        compra.setFormaPagamento(formaPagamento.get());
+
+        if (dto.getIdFormaPagamento() != null) {
+
+            Optional<FormaPagamento> formaPagamento =
+                    formaPagamentoService.getFormaPagamentoById(dto.getIdFormaPagamento());
+
+            if (!formaPagamento.isPresent()) {
+                throw new RegraNegocioException("Forma de pagamento não encontrada");
+            }
+
+            compra.setFormaPagamento(formaPagamento.get());
+        }
 
         if (dto.getItens() != null) {
             List<ItemCompra> itens = dto.getItens()

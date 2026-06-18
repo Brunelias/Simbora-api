@@ -53,12 +53,12 @@ public class EventoService {
             throw new RegraNegocioException("Data de início inválida");
         }
 
-        if (evento.getDataFim() == null) {
-            throw new RegraNegocioException("Data de fim inválida");
-        }
-
         if (evento.getLocal() == null || evento.getLocal().trim().equals("")) {
             throw new RegraNegocioException("Local inválido");
+        }
+
+        if (evento.getCidade() == null){
+            throw new RegraNegocioException("Cidade inválida");
         }
 
         if (evento.getCapacidadeMaxima() == null || evento.getCapacidadeMaxima() <= 0) {

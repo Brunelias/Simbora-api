@@ -19,6 +19,7 @@ public class LoteDTO {
     private Integer quantidade;
     private Double precoUnitario;
     private Long idEvento;
+    private Boolean gratuito;
 
     public static LoteDTO create(Lote lote) {
         ModelMapper modelMapper = new ModelMapper();
