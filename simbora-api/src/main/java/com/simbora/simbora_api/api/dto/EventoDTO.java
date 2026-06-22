@@ -17,8 +17,8 @@ public class EventoDTO {
     private String nome;
     private String descricao;
     private LocalDateTime dataInicio;
-    private LocalDateTime dataFim;
     private String local;
+    private String cidade;
     private Integer capacidadeMaxima;
     private String status;
     private Long idOrganizador;

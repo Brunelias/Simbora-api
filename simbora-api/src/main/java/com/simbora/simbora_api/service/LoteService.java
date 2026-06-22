@@ -29,7 +29,22 @@ public class LoteService {
 
     @Transactional
     public Lote salvar(Lote lote) {
+
+        if (lote.getId() != null) {
+            Optional<Lote> loteSalvo = repository.findById(lote.getId());
+
+            if (loteSalvo.isPresent()) {
+                Boolean gratuitoAtual = loteSalvo.get().getGratuito();
+                Boolean gratuitoNovo = lote.getGratuito();
+
+                if (gratuitoAtual != null && gratuitoNovo != null && !gratuitoAtual.equals(gratuitoNovo)) {
+                    throw new RegraNegocioException("Não é permitido alterar o tipo do lote");
+                }
+            }
+        }
+
         validar(lote);
+
         return repository.save(lote);
     }
 
@@ -57,8 +72,20 @@ public class LoteService {
             throw new RegraNegocioException("Quantidade inválida");
         }
 
-        if (lote.getPrecoUnitario() == null || lote.getPrecoUnitario() <= 0) {
+        if (lote.getGratuito() == null) {
+            throw new RegraNegocioException("Informe se o lote é gratuito ou pago");
+        }
+
+        if (lote.getPrecoUnitario() == null) {
             throw new RegraNegocioException("Preço unitário inválido");
+        }
+
+        if (lote.getGratuito() && lote.getPrecoUnitario() != 0) {
+            throw new RegraNegocioException("Lote gratuito deve ter preço zero");
+        }
+
+        if (!lote.getGratuito() && lote.getPrecoUnitario() <= 0) {
+            throw new RegraNegocioException("Lote pago deve ter preço maior que zero");
         }
 
         if (lote.getEvento() == null || lote.getEvento().getId() == null) {

@@ -26,6 +26,7 @@ public class Lote {
     private LocalDateTime dataFim;
     private Integer quantidade;
     private Double precoUnitario;
+    private Boolean gratuito;
 
     @ManyToOne
     @JoinColumn(name = "evento_id")

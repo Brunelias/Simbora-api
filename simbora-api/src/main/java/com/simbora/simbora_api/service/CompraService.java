@@ -66,6 +66,11 @@ public class CompraService {
         compra.setDataCompra(LocalDateTime.now());
         compra.setValorTotal(valorTotal);
 
+        if (valorTotal == 0) {
+            compra.setFormaPagamento(null);
+            compra.setStatus("CONFIRMADA");
+        }
+
         Compra compraSalva = repository.save(compra);
 
         gerarIngressos(compraSalva);
@@ -85,13 +90,11 @@ public class CompraService {
             throw new RegraNegocioException("Cliente inválido");
         }
 
-        if (compra.getFormaPagamento() == null || compra.getFormaPagamento().getId() == null) {
-            throw new RegraNegocioException("Forma de pagamento inválida");
-        }
-
         if (compra.getItens() == null || compra.getItens().isEmpty()) {
             throw new RegraNegocioException("A compra precisa ter pelo menos um item");
         }
+
+        boolean possuiItemPago = false;
 
         for (ItemCompra item : compra.getItens()) {
 
@@ -106,6 +109,30 @@ public class CompraService {
             if (item.getLote().getQuantidade() == null || item.getLote().getQuantidade() < item.getQuantidade()) {
                 throw new RegraNegocioException("Quantidade indisponível no lote");
             }
+
+            if (item.getLote().getGratuito()) {
+
+                if (item.getQuantidade() > 1) {
+                    throw new RegraNegocioException("Só é permitido um ingresso por pessoa em lotes gratuitos");
+                }
+
+                boolean jaPossuiIngresso =
+                        ingressoRepository.existsByClienteIdAndLoteId(
+                                compra.getCliente().getId(),
+                                item.getLote().getId()
+                        );
+
+                if (jaPossuiIngresso) {
+                    throw new RegraNegocioException("Cliente já possui ingresso deste lote gratuito");
+                }
+
+            } else {
+                possuiItemPago = true;
+            }
+        }
+
+        if (possuiItemPago && compra.getFormaPagamento() == null) {
+            throw new RegraNegocioException("Forma de pagamento obrigatória para compra paga");
         }
     }
 
