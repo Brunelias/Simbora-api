@@ -10,6 +10,7 @@ import com.simbora.simbora_api.model.repository.LoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -68,8 +69,8 @@ public class CompraService {
 
         if (valorTotal == 0) {
             compra.setFormaPagamento(null);
-            compra.setStatus("CONFIRMADA");
         }
+        compra.setStatus("CONFIRMADA");
 
         Compra compraSalva = repository.save(compra);
 
@@ -155,5 +156,13 @@ public class CompraService {
                 ingressoRepository.save(ingresso);
             }
         }
+    }
+
+    public List<Compra> getComprasByClienteEmail(String email) {
+        return repository.findByClienteEmail(email);
+    }
+
+    public List<Compra> getComprasByOrganizadorEmail(String email) {
+        return repository.findByOrganizadorEmail(email);
     }
 }

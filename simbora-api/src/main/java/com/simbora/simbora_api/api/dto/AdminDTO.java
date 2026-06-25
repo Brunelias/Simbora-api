@@ -16,6 +16,7 @@ public class AdminDTO {
     private String nome;
     private String email;
     private String celular;
+    private String senha;
 
     public static AdminDTO create(Admin admin) {
         ModelMapper modelMapper = new ModelMapper();

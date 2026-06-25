@@ -16,6 +16,7 @@ public class ClienteDTO {
     private String nome;
     private String email;
     private String celular;
+    private String senha;
 
     public static ClienteDTO create(Cliente cliente) {
         ModelMapper modelMapper = new ModelMapper();

@@ -10,10 +10,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class OrganizadorService {
 
     private OrganizadorRepository repository;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     public OrganizadorService(OrganizadorRepository repository) {
         this.repository = repository;
@@ -30,7 +36,32 @@ public class OrganizadorService {
     @Transactional
     public Organizador salvar(Organizador organizador) {
         validar(organizador);
+
+        organizador.setSenha(encoder.encode(organizador.getSenha()));
+
         return repository.save(organizador);
+    }
+
+    @Transactional
+    public Organizador atualizar(Organizador organizador) {
+        Organizador organizadorBanco = repository.findById(organizador.getId()).orElseThrow(() ->
+                        new RegraNegocioException("Organizador não encontrado"));
+
+        validar(organizador);
+        organizador.setSenha(organizadorBanco.getSenha());
+
+        return repository.save(organizador);
+    }
+
+    @Transactional
+    public Organizador atualizarPorEmail(String email, Organizador organizadorAtualizado) {
+        Organizador organizadorBanco = repository.findByEmail(email)
+                .orElseThrow(() -> new RegraNegocioException("Organizador não encontrado"));
+
+        organizadorBanco.setNome(organizadorAtualizado.getNome());
+        organizadorBanco.setCelular(organizadorAtualizado.getCelular());
+
+        return repository.save(organizadorBanco);
     }
 
     @Transactional
@@ -55,6 +86,9 @@ public class OrganizadorService {
 
         if (organizador.getDocumento() == null || organizador.getDocumento().trim().equals("")) {
             throw new RegraNegocioException("Documento inválido");
+        }
+        if (organizador.getSenha() == null ||organizador.getSenha().trim().equals("")) {
+            throw new RegraNegocioException("Senha inválida");
         }
     }
 }

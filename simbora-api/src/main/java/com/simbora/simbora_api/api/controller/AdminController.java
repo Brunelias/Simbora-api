@@ -72,8 +72,7 @@ public class AdminController {
 
     @PutMapping("{id}")
     @ApiOperation("Atualizar um administrador")
-    public ResponseEntity atualizar(@PathVariable("id") Long id,
-                                    @RequestBody AdminDTO dto) {
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody AdminDTO dto) {
 
         if (!service.getAdminById(id).isPresent()) {
             return new ResponseEntity("Administrador não encontrado", HttpStatus.NOT_FOUND);
@@ -85,7 +84,7 @@ public class AdminController {
 
             admin.setId(id);
 
-            admin = service.salvar(admin);
+            admin = service.atualizar(admin);
 
             return ResponseEntity.ok(AdminDTO.create(admin));
 

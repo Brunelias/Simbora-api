@@ -10,10 +10,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class ClienteService {
 
     private ClienteRepository repository;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     public ClienteService(ClienteRepository repository) {
         this.repository = repository;
@@ -30,7 +36,31 @@ public class ClienteService {
     @Transactional
     public Cliente salvar(Cliente cliente) {
         validar(cliente);
+        cliente.setSenha(encoder.encode(cliente.getSenha()));
+
         return repository.save(cliente);
+    }
+
+    @Transactional
+    public Cliente atualizar(Cliente cliente) {
+        Cliente clienteBanco = repository.findById(cliente.getId()).orElseThrow(() ->
+                        new RegraNegocioException("Cliente não encontrado"));
+
+        validar(cliente);
+        cliente.setSenha(clienteBanco.getSenha());
+
+        return repository.save(cliente);
+    }
+
+    @Transactional
+    public Cliente atualizarPorEmail(String email, Cliente clienteAtualizado) {
+        Cliente clienteBanco = repository.findByEmail(email)
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
+
+        clienteBanco.setNome(clienteAtualizado.getNome());
+        clienteBanco.setCelular(clienteAtualizado.getCelular());
+
+        return repository.save(clienteBanco);
     }
 
     @Transactional
@@ -51,6 +81,10 @@ public class ClienteService {
 
         if (cliente.getCelular() == null || cliente.getCelular().trim().equals("")) {
             throw new RegraNegocioException("Celular inválido");
+        }
+        if (cliente.getSenha() == null ||
+                cliente.getSenha().trim().equals("")) {
+            throw new RegraNegocioException("Senha inválida");
         }
     }
 }

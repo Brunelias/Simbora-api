@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/v1/clientes")
@@ -69,8 +70,7 @@ public class ClienteController {
 
     @PutMapping("{id}")
     @ApiOperation("Atualizar um cliente")
-    public ResponseEntity atualizar(@PathVariable("id") Long id,
-                                    @RequestBody ClienteDTO dto) {
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody ClienteDTO dto) {
 
         if (!service.getClienteById(id).isPresent()) {
             return new ResponseEntity("Cliente não encontrado", HttpStatus.NOT_FOUND);
@@ -82,12 +82,25 @@ public class ClienteController {
 
             cliente.setId(id);
 
-            cliente = service.salvar(cliente);
+            cliente = service.atualizar(cliente);
 
             return ResponseEntity.ok(ClienteDTO.create(cliente));
 
         } catch (RegraNegocioException e) {
 
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/me")
+    @ApiOperation("Atualizar próprio perfil")
+    public ResponseEntity atualizarMe(@RequestBody ClienteDTO dto, Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            Cliente clienteAtualizado = converter(dto);
+            Cliente salvo = service.atualizarPorEmail(email, clienteAtualizado);
+            return ResponseEntity.ok(ClienteDTO.create(salvo));
+        } catch (RegraNegocioException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

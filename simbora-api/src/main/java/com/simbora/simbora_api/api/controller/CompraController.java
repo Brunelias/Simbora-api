@@ -17,6 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,17 +34,6 @@ public class CompraController {
     private final ClienteService clienteService;
     private final FormaPagamentoService formaPagamentoService;
     private final LoteService loteService;
-
-    @GetMapping
-    public ResponseEntity get() {
-        List<Compra> compras = service.getCompras();
-
-        return ResponseEntity.ok(
-                compras.stream()
-                        .map(CompraDTO::create)
-                        .collect(Collectors.toList())
-        );
-    }
 
     @GetMapping("/{id}")
     @ApiOperation("Obter detalhes de uma compra")
@@ -72,6 +62,40 @@ public class CompraController {
         } catch (RegraNegocioException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/minhas")
+    @ApiOperation("Obter compras do cliente autenticado")
+    public ResponseEntity getMinhasCompras(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        List<Compra> compras = service.getComprasByClienteEmail(email);
+
+        return ResponseEntity.ok(
+                compras.stream()
+                        .map(CompraDTO::create)
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @GetMapping
+    @ApiOperation("Obter todas as compras")
+    public ResponseEntity get(Authentication authentication) {
+
+        String email = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        List<Compra> compras = isAdmin
+                ? service.getCompras()
+                : service.getComprasByOrganizadorEmail(email);
+
+        return ResponseEntity.ok(
+                compras.stream()
+                        .map(CompraDTO::create)
+                        .collect(Collectors.toList())
+        );
     }
 
     public Compra converter(CompraDTO dto) {

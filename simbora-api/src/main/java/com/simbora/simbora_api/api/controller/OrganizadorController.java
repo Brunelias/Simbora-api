@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/api/v1/organizadores")
@@ -72,8 +73,7 @@ public class OrganizadorController {
 
     @PutMapping("{id}")
     @ApiOperation("Atualizar um organizador")
-    public ResponseEntity atualizar(@PathVariable("id") Long id,
-                                    @RequestBody OrganizadorDTO dto) {
+    public ResponseEntity atualizar(@PathVariable("id") Long id, @RequestBody OrganizadorDTO dto) {
 
         if (!service.getOrganizadorById(id).isPresent()) {
             return new ResponseEntity("Organizador não encontrado", HttpStatus.NOT_FOUND);
@@ -85,12 +85,25 @@ public class OrganizadorController {
 
             organizador.setId(id);
 
-            organizador = service.salvar(organizador);
+            organizador = service.atualizar(organizador);
 
             return ResponseEntity.ok(OrganizadorDTO.create(organizador));
 
         } catch (RegraNegocioException e) {
 
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/me")
+    @ApiOperation("Atualizar próprio perfil")
+    public ResponseEntity atualizarMe(@RequestBody OrganizadorDTO dto, Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            Organizador organizadorAtualizado = converter(dto);
+            Organizador salvo = service.atualizarPorEmail(email, organizadorAtualizado);
+            return ResponseEntity.ok(OrganizadorDTO.create(salvo));
+        } catch (RegraNegocioException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

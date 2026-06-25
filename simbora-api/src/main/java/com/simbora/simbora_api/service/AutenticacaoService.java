@@ -3,16 +3,29 @@ package com.simbora.simbora_api.service;
 import com.simbora.simbora_api.exception.SenhaInvalidaException;
 import com.simbora.simbora_api.exception.RegraNegocioException;
 import com.simbora.simbora_api.model.entity.Pessoa;
+import com.simbora.simbora_api.model.entity.Admin;
+import com.simbora.simbora_api.model.entity.Cliente;
+import com.simbora.simbora_api.model.entity.Organizador;
 import com.simbora.simbora_api.model.repository.PessoaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Optional;
 
 @Service
-public class AutenticacaoService {
+public class AutenticacaoService implements UserDetailsService {
 
     private PessoaRepository repository;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     public AutenticacaoService(PessoaRepository repository) {
         this.repository = repository;
@@ -30,11 +43,41 @@ public class AutenticacaoService {
             throw new RegraNegocioException("Usuário não encontrado");
         }
 
-        if (!pessoa.get().getSenha().equals(senha)) {
+        boolean senhaValida =
+                encoder.matches(senha, pessoa.get().getSenha());
+
+        if (!senhaValida) {
             throw new SenhaInvalidaException();
         }
 
         return pessoa.get();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
+
+        Pessoa pessoa = repository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("Usuário não encontrado"));
+
+        String[] roles;
+
+        if (pessoa instanceof Admin) {
+            roles = new String[]{"ADMIN"};
+        } else if (pessoa instanceof Organizador) {
+            roles = new String[]{"ORGANIZADOR"};
+        } else if (pessoa instanceof Cliente){
+            roles = new String[]{"CLIENTE"};
+        } else throw new RegraNegocioException("Tipo de usuário inválido");
+
+
+        return User
+                .builder()
+                .username(pessoa.getEmail())
+                .password(pessoa.getSenha())
+                .roles(roles)
+                .build();
     }
 
     @Transactional
@@ -48,7 +91,9 @@ public class AutenticacaoService {
 
         Pessoa pessoaEncontrada = pessoa.get();
 
-        if (!pessoaEncontrada.getSenha().equals(senhaAtual)) {
+        if (!encoder.matches(
+                senhaAtual,
+                pessoaEncontrada.getSenha())) {
             throw new SenhaInvalidaException();
         }
 
@@ -56,7 +101,8 @@ public class AutenticacaoService {
             throw new SenhaInvalidaException();
         }
 
-        if (confirmacaoNovaSenha == null || confirmacaoNovaSenha.trim().equals("")) {
+        if (confirmacaoNovaSenha == null ||
+                confirmacaoNovaSenha.trim().equals("")) {
             throw new RegraNegocioException("Confirmação de senha inválida");
         }
 
@@ -64,7 +110,9 @@ public class AutenticacaoService {
             throw new RegraNegocioException("Confirmação de senha inválida");
         }
 
-        pessoaEncontrada.setSenha(novaSenha);
+        pessoaEncontrada.setSenha(
+                encoder.encode(novaSenha)
+        );
 
         return repository.save(pessoaEncontrada);
     }

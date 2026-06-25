@@ -17,6 +17,7 @@ public class OrganizadorDTO {
     private String email;
     private String celular;
     private String documento;
+    private String senha;
 
     public static OrganizadorDTO create(Organizador organizador) {
         ModelMapper modelMapper = new ModelMapper();

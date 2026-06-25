@@ -10,10 +10,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class AdminService {
 
     private AdminRepository repository;
+
+    @Autowired
+    private PasswordEncoder encoder;
 
     public AdminService(AdminRepository repository) {
         this.repository = repository;
@@ -30,6 +36,20 @@ public class AdminService {
     @Transactional
     public Admin salvar(Admin admin) {
         validar(admin);
+
+        admin.setSenha(encoder.encode(admin.getSenha()));
+
+        return repository.save(admin);
+    }
+
+    @Transactional
+    public Admin atualizar(Admin admin) {
+        Admin adminBanco = repository.findById(admin.getId()).orElseThrow(() ->
+                        new RegraNegocioException("Administrador não encontrado"));
+
+        validar(admin);
+        admin.setSenha(adminBanco.getSenha());
+
         return repository.save(admin);
     }
 
@@ -51,6 +71,10 @@ public class AdminService {
 
         if (admin.getCelular() == null || admin.getCelular().trim().equals("")) {
             throw new RegraNegocioException("Celular inválido");
+        }
+
+        if (admin.getSenha() == null || admin.getSenha().trim().equals("")) {
+            throw new RegraNegocioException("Senha inválida");
         }
     }
 }
