@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Configurações sensíveis ###
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+!src/main/resources/application.properties.example
+.env
+
+### Logs e sistema ###
+*.log
+logs/
+.DS_Store

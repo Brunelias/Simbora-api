@@ -1,8 +1,8 @@
 spring.application.name=simbora-api
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/simbora
-spring.datasource.username=postgres
-spring.datasource.password=bruninho97
+spring.datasource.url=jdbc:postgresql://localhost:5432/nome_do_banco
+spring.datasource.username=seu_usuario
+spring.datasource.password=sua_senha
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
