@@ -90,8 +90,19 @@ com.simbora.simbora_api
    ```bash
    cp src/main/resources/application.properties.example src/main/resources/application.properties
    ```
-   Edite o `application.properties` com seu usuário, senha e nome do banco.
+   Edite o `application.properties` com o acesso ao banco e os dados do
+   administrador inicial:
+   ```properties
+   spring.datasource.url=jdbc:postgresql://localhost:5432/simbora_db
+   spring.datasource.username=seu_usuario
+   spring.datasource.password=sua_senha
 
+   app.admin.nome=Administrador
+   app.admin.email=admin@exemplo.com
+   app.admin.celular=00000000000
+   app.admin.senha=troque_esta_senha
+   ```
+   
 4. Execute a aplicação:
    ```bash
    ./mvnw spring-boot:run
