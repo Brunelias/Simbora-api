@@ -42,6 +42,10 @@ public class CompraService {
         return repository.findById(id);
     }
 
+    public List<Compra> getComprasByEventoId(Long eventoId) {
+        return repository.findByEventoId(eventoId);
+    }
+
     @Transactional
     public Compra salvar(Compra compra) {
         validar(compra);
@@ -109,6 +113,10 @@ public class CompraService {
 
             if (item.getLote().getQuantidade() == null || item.getLote().getQuantidade() < item.getQuantidade()) {
                 throw new RegraNegocioException("Quantidade indisponível no lote");
+            }
+
+            if (item.getLote().getGratuito() == null) {
+                throw new RegraNegocioException("Tipo do lote inválido");
             }
 
             if (item.getLote().getGratuito()) {

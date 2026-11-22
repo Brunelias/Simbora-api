@@ -4,11 +4,15 @@ import com.simbora.simbora_api.api.dto.CompraDTO;
 import com.simbora.simbora_api.exception.RegraNegocioException;
 import com.simbora.simbora_api.model.entity.Cliente;
 import com.simbora.simbora_api.model.entity.Compra;
+import com.simbora.simbora_api.model.entity.Evento;
 import com.simbora.simbora_api.model.entity.FormaPagamento;
 import com.simbora.simbora_api.model.entity.ItemCompra;
 import com.simbora.simbora_api.model.entity.Lote;
+import com.simbora.simbora_api.model.entity.Pessoa;
+import com.simbora.simbora_api.service.AutenticacaoService;
 import com.simbora.simbora_api.service.ClienteService;
 import com.simbora.simbora_api.service.CompraService;
+import com.simbora.simbora_api.service.EventoService;
 import com.simbora.simbora_api.service.FormaPagamentoService;
 import com.simbora.simbora_api.service.LoteService;
 import io.swagger.annotations.*;
@@ -34,10 +38,13 @@ public class CompraController {
     private final ClienteService clienteService;
     private final FormaPagamentoService formaPagamentoService;
     private final LoteService loteService;
+    private final AutenticacaoService autenticacaoService;
+    private final EventoService eventoService;
 
     @GetMapping("/{id}")
     @ApiOperation("Obter detalhes de uma compra")
-    public ResponseEntity get(@PathVariable("id") @ApiParam("Id da compra") Long id) {
+    public ResponseEntity get(@PathVariable("id") @ApiParam("Id da compra") Long id,
+                              Authentication authentication) {
 
         Optional<Compra> compra = service.getCompraById(id);
 
@@ -45,12 +52,34 @@ public class CompraController {
             return new ResponseEntity("Compra não encontrada", HttpStatus.NOT_FOUND);
         }
 
+        if (!isAdmin(authentication)) {
+            String email = authentication.getName();
+
+            boolean compraDoOrganizador = compra.get().getItens().stream()
+                    .anyMatch(item -> email.equals(
+                            item.getLote().getEvento().getOrganizador().getEmail()));
+
+            if (!compraDoOrganizador) {
+                return new ResponseEntity(
+                        "Você não tem acesso a esta compra",
+                        HttpStatus.FORBIDDEN);
+            }
+        }
+
         return ResponseEntity.ok(CompraDTO.create(compra.get()));
     }
 
     @PostMapping
-    @ApiOperation("Salvar uma nova compra")
-    public ResponseEntity post(@RequestBody CompraDTO dto) {
+    @ApiOperation("Salvar uma nova compra (somente cliente autenticado)")
+    public ResponseEntity post(@RequestBody CompraDTO dto, Authentication authentication) {
+
+        Optional<Pessoa> pessoa = autenticacaoService.buscarPorEmail(authentication.getName());
+
+        if (!pessoa.isPresent()) {
+            return new ResponseEntity("Usuário não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        dto.setIdCliente(pessoa.get().getId());
 
         try {
             Compra compra = converter(dto);
@@ -80,22 +109,49 @@ public class CompraController {
     }
 
     @GetMapping
-    @ApiOperation("Obter todas as compras")
-    public ResponseEntity get(Authentication authentication) {
+    @ApiOperation("Listar compras, com filtro opcional por evento (admin e organizador)")
+    public ResponseEntity listar(
+            @RequestParam(value = "eventoId", required = false)
+            @ApiParam("Id do evento (opcional)") Long eventoId,
+            Authentication authentication) {
 
         String email = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isAdmin = isAdmin(authentication);
 
-        List<Compra> compras = isAdmin
-                ? service.getCompras()
-                : service.getComprasByOrganizadorEmail(email);
+        List<Compra> compras;
+
+        if (eventoId != null) {
+
+            Optional<Evento> evento = eventoService.getEventoById(eventoId);
+
+            if (!evento.isPresent()) {
+                return new ResponseEntity("Evento não encontrado", HttpStatus.NOT_FOUND);
+            }
+
+            if (!isAdmin && !email.equals(evento.get().getOrganizador().getEmail())) {
+                return new ResponseEntity(
+                        "Você não tem acesso às compras deste evento",
+                        HttpStatus.FORBIDDEN);
+            }
+
+            compras = service.getComprasByEventoId(eventoId);
+
+        } else {
+            compras = isAdmin
+                    ? service.getCompras()
+                    : service.getComprasByOrganizadorEmail(email);
+        }
 
         return ResponseEntity.ok(
                 compras.stream()
                         .map(CompraDTO::create)
                         .collect(Collectors.toList())
         );
+    }
+
+    private boolean isAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
     public Compra converter(CompraDTO dto) {

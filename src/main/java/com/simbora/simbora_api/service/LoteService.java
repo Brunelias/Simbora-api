@@ -68,6 +68,10 @@ public class LoteService {
             throw new RegraNegocioException("Data de fim inválida");
         }
 
+        if (!lote.getDataFim().isAfter(lote.getDataInicio())) {
+            throw new RegraNegocioException("A data de fim deve ser posterior à data de início");
+        }
+
         if (lote.getQuantidade() == null || lote.getQuantidade() <= 0) {
             throw new RegraNegocioException("Quantidade inválida");
         }

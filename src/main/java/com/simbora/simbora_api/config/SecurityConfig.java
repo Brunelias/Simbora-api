@@ -65,10 +65,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.PUT, "/api/v1/organizadores/me")
                 .hasAnyRole("ORGANIZADOR", "ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/v1/compras")
-                .hasAnyRole("ADMIN", "CLIENTE")
+                .hasAnyRole( "CLIENTE")
 
 // --- Somente Admin ---
-                .antMatchers("/api/v1/admin/**")
+                .antMatchers("/api/v1/admins/**")
                 .hasRole("ADMIN")
                 .antMatchers(HttpMethod.POST,   "/api/v1/formas-pagamento/**")
                 .hasRole("ADMIN")
@@ -90,7 +90,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .hasAnyRole("ADMIN", "ORGANIZADOR")
                 .antMatchers(HttpMethod.GET, "/api/v1/compras/**")
                 .hasAnyRole("ADMIN", "ORGANIZADOR")
-                .antMatchers("/api/v1/checkin/**")
+                .antMatchers("/api/v1/checkins/**")
                 .hasAnyRole("ADMIN", "ORGANIZADOR")
 
 // --- Admin, Organizador e Cliente ---

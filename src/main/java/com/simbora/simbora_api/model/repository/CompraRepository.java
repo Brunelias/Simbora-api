@@ -16,4 +16,10 @@ public interface CompraRepository extends JpaRepository<Compra, Long> {
             "JOIN l.evento e " +
             "WHERE e.organizador.email = :email")
     List<Compra> findByOrganizadorEmail(@Param("email") String email);
+
+    @Query("SELECT DISTINCT c FROM Compra c " +
+            "JOIN c.itens i " +
+            "JOIN i.lote l " +
+            "WHERE l.evento.id = :eventoId")
+    List<Compra> findByEventoId(@Param("eventoId") Long eventoId);
 }
